@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "helyos_agent_sdk"
-version = "0.7.4"
-description = ""
-authors = ["Carlos Viol Barbosa <you@example.com>"]
+version = "0.7.5"
+description = "Package encloses methods and data definitions that facilitate the connection of agents in the helyOS framework."
+authors = ["Carlos Viol Barbosa , Julius Kolb "]
 readme = "README.md"
 packages = [{include = "helyos_agent_sdk"}]
-keywords = ["autonomous driving", "helyos", "sdk"]
+keywords = ["autonomous driving", "helyos", "agent", "robot"]
 
-homepage = "https://helyos.ivi.fraunhofer.de"
-repository = "https://github.com/FraunhoferIVI/helyOS-agent-sdk"
-documentation = "https://fraunhoferivi.github.io/helyOS-agent-sdk/"
+homepage = "https://helyosframework.org"
+repository = "https://github.com/helyOSFramework/helyos_agent_sdk"
+documentation = "https://helyosframework.github.io/helyos_agent_sdk/"
 
 classifiers = [
     "Environment :: Console",

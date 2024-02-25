@@ -3,7 +3,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <a href="https://github.com/">
+  <a href="https://helyosframework.org/">
     <img src="helyos_logo.png" alt="Logo"  height="80">
     <img src="truck.png" alt="Logo"  height="80">
   </a>
@@ -13,20 +13,20 @@
   <p align="center">
     Methods and data strrctures to connect autonomous vehicles to helyOS.
     <br />
-    <a href="https://fraunhoferivi.github.io/helyOS-agent-sdk/"><strong>Explore the docs »</strong></a>
+    <a href="https://helyosframework.github.io/helyos_agent_sdk/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/">View Demo</a>
     ·
-    <a href="https://github.com/FraunhoferIVI/helyOS-agent-sdk/issues">Report Bug</a>
+    <a href="https://github.com/helyOSFramework/helyos_agent_sdk/issues">Report Bug</a>
     ·
-    <a href="https://github.com/FraunhoferIVI/helyOS-agent-sdk/issues">Request Feature</a>
+    <a href="https://github.com/helyOSFramework/helyos_agent_sdk/issues">Request Feature</a>
   </p>
 </div>
 
 ## About The Project
 
-The helyos-agent-sdk python package encloses methods and data structures definitions that facilitate the connection to helyOS core through rabbitMQ.
+The helyos-agent-sdk python package encloses methods and data structures definitions that facilitate the connection to helyOS core via RabbitMQ.
 
 ### List of features
 
@@ -84,10 +84,6 @@ agent_connector.start_listening()
 
 Keep it simple. Keep it minimal.
 
-### Authors
-
-*   Carlos E. Viol Barbosa
-*   ...
 
 ### License
 
