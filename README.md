@@ -16,7 +16,7 @@
     <a href="https://helyosframework.github.io/helyos_agent_sdk/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/">View Demo</a>
+    <a href="https://github.com/helyOSFramework/helyos_agent_slim_simulator">Demo</a>
     ·
     <a href="https://github.com/helyOSFramework/helyos_agent_sdk/issues">Report Bug</a>
     ·
