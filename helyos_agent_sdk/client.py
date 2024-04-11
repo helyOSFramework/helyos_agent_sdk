@@ -1,4 +1,4 @@
-import time
+import time, warnings
 from functools import wraps
 import pika
 import os
@@ -21,6 +21,10 @@ REGISTRATION_TOKEN = os.environ.get(
 def connect_rabbitmq(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=False, ca_certificate=None, temporary=False):
     credentials = pika.PlainCredentials(username, passwd)
     if enable_ssl:
+        if rabbitmq_port == 5672:
+            warnings.warn('Warning: SSL is enabled, but the port is set to 5672, which is the default for non-encrypted AMQP connection.' +
+                          ' Consider using port 5671.', UserWarning)
+
         context = ssl.create_default_context(cadata=ca_certificate)
         if ca_certificate is not None:
             context.check_hostname = True
@@ -365,7 +369,8 @@ class HelyOSClient():
 
 
         password = body.pop('rbmq_password', None)
-        self.ca_certificate = body.get('ca_certificate', self.ca_certificate)
+        if self.ca_certificate is None:
+            self.ca_certificate = body.get('ca_certificate', self.ca_certificate)
         if self.helyos_public_key is None:
             self.helyos_public_key = body.get('helyos_public_key', self.helyos_public_key)
 

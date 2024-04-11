@@ -6,7 +6,7 @@ import ssl
 from helyos_agent_sdk.models import CheckinResponseMessage
 from .exceptions import *
 import paho.mqtt.client as mqtt
-import time
+import time, warnings
 from .crypto import Signing, generate_private_public_keys
 
 AGENTS_UL_EXCHANGE = os.environ.get(
@@ -41,6 +41,10 @@ def connect_mqtt(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=Fals
     mqtt_client.on_connect = on_connect
 
     if enable_ssl:
+        if rabbitmq_port == 1883:
+            warnings.warn('Warning: SSL is enabled, but the port is set to 1883, which is the default for non-encrypted MQTT connection.' + 
+                          'Consider using port 8883.', UserWarning)
+  
         context = ssl.create_default_context(cadata=ca_certificate)
         if ca_certificate is not None:
             context.check_hostname = True
@@ -364,7 +368,8 @@ class HelyOSMQTTClient():
 
 
         password = body.pop('rbmq_password', None)
-        self.ca_certificate = body.get('ca_certificate', self.ca_certificate)
+        if self.ca_certificate is None:
+            self.ca_certificate = body.get('ca_certificate', self.ca_certificate)
         if self.helyos_public_key is None:
             self.helyos_public_key = body.get('helyos_public_key', self.helyos_public_key)
 
