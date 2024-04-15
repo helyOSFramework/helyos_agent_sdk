@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "helyos_agent_sdk"
-version = "0.7.6"
+version = "0.7.7"
 description = "Package encloses methods and data definitions that facilitate the connection of agents in the helyOS framework."
 authors = ["Carlos Viol Barbosa , Julius Kolb "]
 readme = "README.md"
@@ -26,6 +26,7 @@ pycryptodome = "^3.15.0"
 cryptography = "^41.0.3"
 dataclasses-json = "^0.5.7"
 paho-mqtt = "^1.6.1"
+requests = {version = "^2.31.0", platform = "win32 || linux"}
 
 
 [tool.poetry.dev-dependencies]
