@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "helyos_agent_sdk"
-version = "0.7.7"
+version = "0.8.0"
 description = "Package encloses methods and data definitions that facilitate the connection of agents in the helyOS framework."
-authors = ["Carlos Viol Barbosa , Julius Kolb "]
+authors = ["Carlos Viol Barbosa , Julius Kolb"]
 readme = "README.md"
 packages = [{include = "helyos_agent_sdk"}]
 keywords = ["autonomous driving", "helyos", "agent", "robot"]

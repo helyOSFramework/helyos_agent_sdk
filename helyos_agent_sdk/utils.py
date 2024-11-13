@@ -7,4 +7,5 @@ def replicate_helyos_client(helyos_client):
                         helyos_client.rabbitmq_port,
                         helyos_client.uuid,helyos_client.enable_ssl,
                         helyos_client.ca_certificate, helyos_client.helyos_public_key,
-                        helyos_client.private_key, helyos_client.public_key)
+                        helyos_client.private_key, helyos_client.public_key,
+                        helyos_client.vhost)

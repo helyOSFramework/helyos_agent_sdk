@@ -18,7 +18,7 @@ REGISTRATION_TOKEN = os.environ.get(
     'REGISTRATION_TOKEN', '0000-0000-0000-0000-0000')
 
 
-def connect_rabbitmq(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=False, ca_certificate=None, temporary=False):
+def connect_rabbitmq(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=False, ca_certificate=None, vhost='/', temporary=False):
     credentials = pika.PlainCredentials(username, passwd)
     if enable_ssl:
         if rabbitmq_port == 5672:
@@ -38,10 +38,15 @@ def connect_rabbitmq(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=
         ssl_options = None
 
     if temporary:
-        params = pika.ConnectionParameters(rabbitmq_host,  rabbitmq_port, '/', credentials, heartbeat=60, blocked_connection_timeout=60,
+        params = pika.ConnectionParameters(rabbitmq_host,  rabbitmq_port, vhost,
+                                          credentials,
+                                           heartbeat=60,
+                                           blocked_connection_timeout=60,
                                            ssl_options=ssl_options)
     else:
-        params = pika.ConnectionParameters(rabbitmq_host,  rabbitmq_port, '/', credentials, heartbeat=3600,
+        params = pika.ConnectionParameters(rabbitmq_host,  rabbitmq_port, vhost,
+                                           credentials,
+                                           heartbeat=3600,
                                            ssl_options=ssl_options)
     _connection = pika.BlockingConnection(params)
     return _connection
@@ -51,7 +56,7 @@ def connect_rabbitmq(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=
 class HelyOSClient():
 
     def __init__(self, rabbitmq_host, rabbitmq_port=5672, uuid=None, enable_ssl=False, ca_certificate=None,
-                 helyos_public_key=None, agent_privkey=None, agent_pubkey=None ):
+                 helyos_public_key=None, agent_privkey=None, agent_pubkey=None, vhost='/' ):
         """ HelyOS client class
 
             The client implements several functions to facilitate the
@@ -85,6 +90,7 @@ class HelyOSClient():
         self.helyos_public_key = helyos_public_key
         self.uuid = uuid
         self.enable_ssl = enable_ssl
+        self.vhost = vhost
 
         self.connection = None
         self.channel = None
@@ -207,8 +213,10 @@ class HelyOSClient():
 
         # step 1 - connect anonymously
         try:
-            temp_connection = connect_rabbitmq(
-                self.rabbitmq_host, self.rabbitmq_port, 'anonymous', 'anonymous', self.enable_ssl, temporary=True)
+            temp_connection = connect_rabbitmq(self.rabbitmq_host, self.rabbitmq_port,
+                                               'anonymous', 'anonymous', 
+                                               self.enable_ssl, 
+                                               vhost=self.vhost, temporary=True)
             self.guest_channel = temp_connection.channel()
         except Exception as inst:
             print(inst)
@@ -256,8 +264,10 @@ class HelyOSClient():
         """
         print("connecting... ")
         try:
-            self.connection = connect_rabbitmq(self.rabbitmq_host,
-                                               self.rabbitmq_port, username, password, self.enable_ssl, self.ca_certificate)
+            self.connection = connect_rabbitmq(self.rabbitmq_host, self.rabbitmq_port, 
+                                               username, password,
+                                               self.enable_ssl, self.ca_certificate,
+                                               vhost=self.vhost)
             self.channel = self.connection.channel()
             self.rbmq_username = username
             self.rbmq_password = password 
@@ -375,8 +385,10 @@ class HelyOSClient():
             self.helyos_public_key = body.get('helyos_public_key', self.helyos_public_key)
 
         if password:
-            self.connection = connect_rabbitmq(
-                self.rabbitmq_host, self.rabbitmq_port, body['rbmq_username'], password, self.enable_ssl, self.ca_certificate)
+            self.connection = connect_rabbitmq(self.rabbitmq_host, self.rabbitmq_port,
+                                               body['rbmq_username'], password, 
+                                               self.enable_ssl, self.ca_certificate,
+                                               vhost=self.vhost)
             self.channel = self.connection.channel()
             self.rbmq_username = body['rbmq_username']
             self.rbmq_password = password

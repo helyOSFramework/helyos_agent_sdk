@@ -1,12 +1,11 @@
+import time, warnings
 from functools import wraps
+import paho.mqtt.client as mqtt
 import os
 import json
 import ssl
-
-from helyos_agent_sdk.models import CheckinResponseMessage
 from .exceptions import *
-import paho.mqtt.client as mqtt
-import time, warnings
+from helyos_agent_sdk.models import CheckinResponseMessage
 from .crypto import Signing, generate_private_public_keys
 
 AGENTS_UL_EXCHANGE = os.environ.get(
@@ -21,7 +20,7 @@ AGENTS_MQTT_EXCHANGE = os.environ.get(
     'AGENTS_MQTT_EXCHANGE', 'xchange_helyos.agents.mqtt')
 
 
-def connect_mqtt(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=False, ca_certificate=None, temporary=False):
+def connect_mqtt(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=False, ca_certificate=None, vhost='/', temporary=False):
     global mqtt_msg
     LOGMSG = ['success, connection accepted',
               'connection refused, bad protocol',
@@ -31,7 +30,11 @@ def connect_mqtt(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=Fals
               'refused, not authorized'
               ]
     mqtt_client = mqtt.Client()
-    mqtt_client.username_pw_set(username, passwd)
+    if not vhost or vhost != '/':
+        mqtt_client.username_pw_set(f"{vhost}:{username}", passwd)
+    else:
+        mqtt_client.username_pw_set(username, passwd)
+
     mqtt_msg = 'not connected'
 
     def on_connect(client, userdata, flags, rc):
@@ -73,7 +76,7 @@ def connect_mqtt(rabbitmq_host, rabbitmq_port, username, passwd, enable_ssl=Fals
 class HelyOSMQTTClient():
 
     def __init__(self, rabbitmq_host, rabbitmq_port=1883, uuid=None, enable_ssl=False, ca_certificate=None, 
-                 helyos_public_key=None, agent_privkey=None, agent_pubkey=None ):
+                 helyos_public_key=None, agent_privkey=None, agent_pubkey=None,  vhost='/' ):
         """ HelyOS MQTT client class
 
             The client implements several functions to facilitate the
@@ -105,6 +108,7 @@ class HelyOSMQTTClient():
         self.helyos_public_key = helyos_public_key
         self.uuid = uuid
         self.enable_ssl = enable_ssl
+        self.vhost = vhost
 
         self.connection = None
         self.channel = None
@@ -257,7 +261,9 @@ class HelyOSMQTTClient():
 
         try:
             self.connection = connect_mqtt(self.rabbitmq_host, self.rabbitmq_port,
-                                           username, password, self.enable_ssl, self.ca_certificate)
+                                           username, password, 
+                                           self.enable_ssl, self.ca_certificate,
+                                           self.vhost)
             self.channel = self.connection
             self.rbmq_username = username
             self.rbmq_password = password
@@ -375,7 +381,9 @@ class HelyOSMQTTClient():
 
         if password:
             self.connection = connect_mqtt(self.rabbitmq_host, self.rabbitmq_port,
-                                           body['rbmq_username'], password, self.enable_ssl, self.ca_certificate)
+                                           body['rbmq_username'], password, 
+                                           self.enable_ssl, self.ca_certificate,
+                                           self.vhost)
             self.channel = self.connection
             self.rbmq_username = body['rbmq_username']
             self.rbmq_password = password
