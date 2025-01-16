@@ -134,6 +134,8 @@ class HelyOSMQTTClient():
     @property
     def is_connection_open(self):
         """ Check if the connection is open """
+        if self.connection is None:
+            return False
         return self.connection.is_connected()
 
 
