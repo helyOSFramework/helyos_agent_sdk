@@ -497,6 +497,9 @@ class HelyOSClient():
     def stop_listening(self):
         self.channel.stop_consuming()
 
+    def add_callback_threadsafe(self, cb):
+        self.connection.add_callback_threadsafe(cb)
+
     def close_connection(self):
         """ Close the AMQP connection with RabbitMQ server """
         self.connection.close()
