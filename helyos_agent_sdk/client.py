@@ -495,9 +495,18 @@ class HelyOSClient():
         self.channel.start_consuming()
 
     def stop_listening(self):
+        """ Stop the AMQP connection with RabbitMQ server
+            For multi-threaded environments, use the method stop_listening_threadsafe()
+        """
         self.channel.stop_consuming()
+
+    def stop_listening_threadsafe(self):
+        """ Stop the AMQP connection with RabbitMQ server
+            This method should be used in a multi-threaded environment.
+            Otherwise, use the method stop_listening()
+        """
+        self.connection.add_callback_threadsafe(self.channel.stop_consuming)
 
     def close_connection(self):
         """ Close the AMQP connection with RabbitMQ server """
         self.connection.close()
-    
