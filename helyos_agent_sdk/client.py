@@ -189,14 +189,17 @@ class HelyOSClient():
 
         return f'agent.{self.uuid}.assignment'
 
-    def get_checkin_result(self):
+    def get_checkin_result(self, timeout=10):
         """ get_checkin_result() read the checkin data published by helyOS and save into the HelyOSClient instance
             as `checkin_data`.
-
+            This method has a timeout for the checkin response to arrive.
+            :param timeout: Timeout in seconds, defaults to 10
+            :type timeout: float
          """
 
         self.tries = 0
-        self.guest_channel.start_consuming()
+        self.temp_connection.process_data_events(time_limit=timeout)
+        self.guest_channel.stop_consuming()
 
     def auth_required(func):  # pylint: disable=no-self-argument
         @wraps(func)
@@ -213,11 +216,12 @@ class HelyOSClient():
 
         # step 1 - connect anonymously
         try:
-            temp_connection = connect_rabbitmq(self.rabbitmq_host, self.rabbitmq_port,
+            self.temp_connection = connect_rabbitmq(self.rabbitmq_host, self.rabbitmq_port,
                                                'anonymous', 'anonymous', 
                                                self.enable_ssl, 
                                                vhost=self.vhost, temporary=True)
-            self.guest_channel = temp_connection.channel()
+            self.guest_channel = self.temp_connection.channel()
+
         except Exception as inst:
             print(inst)
             raise HelyOSAnonymousConnectionError(
@@ -231,6 +235,7 @@ class HelyOSClient():
 
     def __prepare_checkin_for_already_connected(self):
         # step 1 - use existent connection
+        self.temp_connection = self.connection
         self.guest_channel = self.channel
         # step 2 - creates a temporary queue to receive checkin response
         temp_queue = self.guest_channel.queue_declare(queue='', exclusive=True)
