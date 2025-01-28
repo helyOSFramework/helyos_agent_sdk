@@ -309,7 +309,7 @@ class HelyOSClient():
         :param checkin_guard_interceptor: An optional interceptor function to be called to validate the check-in response, returning True or False, defaults to None
         :type checkin_guard_interceptor: function
         """
-        if self.connection:
+        if self.connection and self.is_connection_open:
             self.__prepare_checkin_for_already_connected()
             username = self.rbmq_username
         else:
