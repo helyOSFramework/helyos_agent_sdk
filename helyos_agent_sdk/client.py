@@ -411,6 +411,7 @@ class HelyOSClient():
                     }
             self.publish(routing_key=self.checking_routing_key, message=json.dumps(checkout_msg), signed=signed)
             self.checkin_data = None
+            self.yard_uid = None
 
     @auth_required
     def publish(self, routing_key, message, signed=False, reply_to=None, corr_id=None, exchange=AGENTS_UL_EXCHANGE):
