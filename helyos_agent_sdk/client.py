@@ -102,6 +102,7 @@ class HelyOSClient():
         self.is_reconecting = False
         self.rbmq_username = None
         self.rbmq_password = None
+        self.yard_uid = None
 
         if agent_pubkey is None or agent_privkey is None:
             self.private_key, self.public_key = generate_private_public_keys()
