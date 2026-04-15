@@ -100,6 +100,38 @@ def parse_instant_actions(self, ch, properties, received_str):
             return None
         print(action_type, Argument)
         return self.other_instant_actions_callback(ch, sender, received_str)
+
+
+
+def parse_stream_messages(self, ch, properties, received_str):
+    """
+    Parse non-persistent stream messages and call the callback function.
+    
+    :param ch: RabbitMQ channel
+    :type ch: Channel
+    :param properties: RabbitMQ properties
+    :type properties: BasicProperties
+    :param received_str: Received message
+    :type received_str: string
+    """
+    
+    sender = None
+    if hasattr(properties, 'user_id'):
+        sender = properties.user_id
+    
+    try:
+        payload = json.loads(received_str)
+        message_signature = payload.get('signature', None)
+        message_str = payload.get('message', None)
+        
+        if message_str is None:
+            return self.other_stream_message_callback(ch, sender, received_str)
+        
+        received_str = json.loads(message_str)
+        return self.stream_message_callback(ch, sender, received_str, message_str, message_signature)
+    except Exception:
+        logging.exception('Error occured while receiving stream message.')
+        return self.other_stream_message_callback(ch, sender, received_str)
     
 
 class AgentConnector():
@@ -141,6 +173,7 @@ class AgentConnector():
         if pose:
             self.agent_pose = pose
 
+    __stream_messages_callback = parse_stream_messages
     __instant_actions_callback = parse_instant_actions
     __assignment_callback = parse_assignment_message
 
@@ -155,12 +188,46 @@ class AgentConnector():
 
     def release_callback(self, ch, sender, received_msg): return print(
         'release callback', sender, received_msg)
+    
+    def stream_message_callback(self, ch, sender, received_msg): return print(
+        'stream callback', sender, received_msg)
+    
+    def other_stream_message_callback(self, ch, sender, received_msg): return print(
+        'other_stream_message_callback', sender, received_msg)
 
     def other_instant_actions_callback(self, ch, sender, received_msg): return print(
         'instant_action_callback', sender, received_msg)
 
     def other_assignment_callback(self, ch, sender, received_msg): return print(
         'other_assignment_callback', sender,  received_msg)
+    
+    def consume_stream_messages(self, stream_message_callback=None, other_callback=None):
+        """
+        Register callback functions for non-persistent stream messages.
+        
+        :param stream_message_callback: stream_message_callback(ch, sender, received_msg, message_str, signature)
+        :type stream_message_callback: func
+        :param other_callback: other_callback(ch, sender, received_msg)
+        :type other_callback: func
+        """
+        
+        if stream_message_callback is not None:
+            self.stream_message_callback = stream_message_callback
+        if other_callback is not None:
+            self.other_stream_message_callback = other_callback
+        
+        def amqp_callback(ch, method, properties, message):
+            return parse_stream_messages(self, ch, properties, received_str=message)
+        
+        def mqtt_callback(ch, userdata, message):
+            return parse_stream_messages(self, ch, {'user_id': None}, received_str=message.payload.decode())
+        
+        if self.helyos_client._protocol == 'AMQP':
+            self.__stream_messages_callback = amqp_callback
+        if self.helyos_client._protocol == 'MQTT':
+            self.__stream_messages_callback = mqtt_callback
+        
+        self.helyos_client.consume_stream_messages(self.__stream_messages_callback)
 
     def consume_instant_action_messages(self, reserve_callback=None, release_callback=None, cancel_callback=None,  other_callback=None):
         """Register the callback functions for instant actions
