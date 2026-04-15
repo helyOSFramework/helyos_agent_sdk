@@ -12,6 +12,8 @@ AGENTS_UL_EXCHANGE = os.environ.get(
     'AGENTS_UL_EXCHANGE', 'xchange_helyos.agents.ul')
 AGENTS_DL_EXCHANGE = os.environ.get(
     'AGENTS_DL_EXCHANGE', 'xchange_helyos.agents.dl')
+AGENTS_STREAM_DL_EXCHANGE = os.environ.get(
+    'AGENTS_STREAM_DL_EXCHANGE', 'xchange_helyos.agents.stream.dl')
 AGENT_ANONYMOUS_EXCHANGE = os.environ.get(
     'AGENT_ANONYMOUS_EXCHANGE', 'xchange_helyos.agents.anonymous')
 REGISTRATION_TOKEN = os.environ.get(
@@ -177,6 +179,12 @@ class HelyOSClient():
         """ Routing key value used to read instant actions  """
 
         return f'agent.{self.uuid}.instantActions'
+    
+    @property
+    def stream_message_routing_key(self):
+        """ Routing key valze used to read stream messages """
+        
+        return f'agent.{self.uuid}.stream'
 
     @property
     def update_routing_key(self):
@@ -486,6 +494,13 @@ class HelyOSClient():
         self.channel.queue_bind(queue=self.instant_actions_queue.method.queue,
                                 exchange=exchange, routing_key=self.instant_actions_routing_key)
         return self.instant_actions_queue
+    
+    @auth_required
+    def set_stream_message_queue(self, exchange=AGENTS_STREAM_DL_EXCHANGE):
+        self.stream_message_queue = self.channel.queue_declare(queue='')
+        self.channel.queue_bind(queue=self.stream_message_queue.method.queue,
+                                exchange=exchange, routing_key=self.stream_message_routing_key)
+        return self.stream_message_queue
 
     @auth_required
     def consume_assignment_messages(self, assignment_callback):
@@ -506,6 +521,13 @@ class HelyOSClient():
         self.set_instant_actions_queue()
         self.channel.basic_consume(queue=self.instant_actions_queue.method.queue, auto_ack=True,
                                    on_message_callback=instant_actions_callback)
+    
+    @auth_required
+    def consume_stream_messages(self, stream_message_callback):
+        """ Receive non-persistent stream messages sent by helyOS core """
+        self.set_stream_message_queue()
+        self.channel.basic_consume(queue=self.stream_message_queue.method.queue, auto_ack=True,
+                                   on_message_callback=stream_message_callback)
 
     def start_listening(self):
         self.channel.start_consuming()

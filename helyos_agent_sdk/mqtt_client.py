@@ -12,6 +12,8 @@ AGENTS_UL_EXCHANGE = os.environ.get(
     'AGENTS_UL_EXCHANGE', 'xchange_helyos.agents.ul')
 AGENTS_DL_EXCHANGE = os.environ.get(
     'AGENTS_DL_EXCHANGE', 'xchange_helyos.agents.dl')
+AGENTS_STREAM_DL_EXCHANGE = os.environ.get(
+    'AGENTS_STREAM_DL_EXCHANGE', 'xchange_helyos.agents.stream.dl')
 AGENT_ANONYMOUS_EXCHANGE = os.environ.get(
     'AGENT_ANONYMOUS_EXCHANGE', 'xchange_helyos.agents.anonymous')
 REGISTRATION_TOKEN = os.environ.get(
@@ -189,6 +191,12 @@ class HelyOSMQTTClient():
             return f'yard/{self.yard_uid}/update'
         return None
     
+
+    @property
+    def stream_messages_routing_key(self):
+        """ MQTT Topic value used to read stream messages """
+        
+        return f'agent/{self.uuid}/stream'
 
     @property
     def instant_actions_routing_key(self):
@@ -466,6 +474,11 @@ class HelyOSMQTTClient():
     def set_instant_actions_queue(self, exchange=AGENTS_DL_EXCHANGE):
         """ There are no queues in MQTT protocol """
         return None
+    
+    @auth_required
+    def set_stream_message_queue(self, exchange=AGENTS_STREAM_DL_EXCHANGE):
+        """ There are no queues in MQTT protocol """
+        return None
 
     @auth_required
     def consume_assignment_messages(self, assignment_callback):
@@ -487,6 +500,13 @@ class HelyOSMQTTClient():
         mqtt_topic = self.instant_actions_routing_key
         self.channel.subscribe(mqtt_topic)
         self.channel.message_callback_add(mqtt_topic, instant_actions_callback)
+    
+    @auth_required
+    def consume_stream_messages(self, stream_message_callback):
+        """ Subscribe to the MQTT stream topic """
+        mqtt_topic = self.stream_messages_routing_key
+        self.channel.subscribe(mqtt_topic)
+        self.channel.message_callback_add(mqtt_topic, stream_message_callback)
 
     def start_listening(self):
         self.channel.loop_start()
